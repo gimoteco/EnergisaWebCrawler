@@ -25,11 +25,12 @@ class Spider1(scrapy.Spider):
         print(resposta.css(seletor_do_contratante).extract_first())
         yield resposta.follow(url_do_historico, callback=self.processar_faturas)
 
-    def processar_faturas(self, res):
-        for link_da_fatura in res.css('table#histFat tbody tr td a')[0:1]:
-            yield res.follow(link_da_fatura.css('::attr(href)').extract_first().replace('imprimirSegundaVia.do', 'exibirFat.do'), callback=self.baixar_fatura)
+    def processar_faturas(self, resposta):
+        for link_da_fatura in resposta.css('table#histFat tbody tr td a')[0:1]:
+            href_da_fatura = link_da_fatura.css('::attr(href)').extract_first().replace('imprimirSegundaVia.do', 'exibirFat.do')
+            yield resposta.follow(href_da_fatura, callback=self.baixar_fatura)
 
-    def baixar_fatura(self, response):
-        with open('fatura.pdf', 'wb') as ruby_file:
-            ruby_file.write(response.body)
+    def baixar_fatura(self, resposta):
+        with open('fatura.pdf', 'wb') as fatura:
+            fatura.write(resposta.body)
             
